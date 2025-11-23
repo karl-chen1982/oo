@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>保險人格深度全析：專家診斷版</title>
+    <!-- 引入高級字體 -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+    <!-- 引入 Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        :root {
+            /* 主色調：深邃藍紫配極光漸層 */
+            --primary: #4c2ff5; 
+            --primary-light: #7b61ff;
+            --secondary: #00d2ff;
+            --bg-gradient: linear-gradient(135deg, #f6f8fd 0%, #e3eaff 100%);
+            
+            /* 玻璃擬態參數 */
+            --glass-bg: rgba(255, 255, 255, 0.9);
+            --glass-border: rgba(255, 255, 255, 0.6);
+            --glass-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+            
+            /* 文字顏色 */
+            --text-main: #1a1a2e;
+            --text-sub: #5e607e;
+        }
+
+        * { box-sizing: border-box; outline: none; }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Noto Sans TC', sans-serif;
+            /* 動態流體背景 */
+            background: linear-gradient(-45deg, #e0c3fc, #8ec5fc, #e0c3fc, #90f7ec);
+            background-size: 400% 400%;
+            animation: gradientBG 12s ease infinite;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: var(--text-main);
+            overflow-x: hidden;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* 主容器 */
+        .container {
+            width: 92%;
+            max-width: 600px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border-radius: 32px;
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--glass-shadow);
+            padding: 40px 32px;
+            position: relative;
+            z-index: 10;
+            min-height: 800px;
+            display: flex;
+            flex-direction: column;
+            transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        h1, h2, h3 { margin: 0; text-align: center; }
+        
+        .screen {
+            display: none;
+            flex-direction: column;
+            height: 100%;
+            flex-grow: 1;
+            animation: fadeIn 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        .screen.active { display: flex; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px) scale(0.98); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        /* --- 封面 --- */
+        .intro-wrapper {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .intro-icon {
+            font-size: 5rem;
+            margin-bottom: 20px;
+            filter: drop-shadow(0 10px 20px rgba(76, 47, 245, 0.2));
+            animation: float 4s ease-in-out infinite;
+        }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
+
+        h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.2rem;
+            margin-bottom: 15px;
+            background: linear-gradient(to right, var(--primary), var(--primary-light));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: 1px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: var(--text-sub);
+            line-height: 1.8;
+            font-size: 1rem;
+            margin-bottom: 40px;
+            font-weight: 400;
+        }
+
+        /* 按鈕 */
+        .btn {
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: white;
+            border: none;
+            padding: 18px;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+            cursor: pointer;
+            width: 100%;
+            box-shadow: 0 10px 30px rgba(76, 47, 245, 0.3);
+            transition: all 0.3s ease;
+            margin-top: auto;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            text-decoration: none;
+            display: block;
+        }
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px rgba(76, 47, 245, 0.4);
+        }
+
+        /* --- 問題頁面 --- */
+        .progress-container { margin-bottom: 25px; }
+        .progress-info { display: flex; justify-content: space-between; font-size: 0.85rem; color: #888; margin-bottom: 8px; }
+        .progress-track { background: #edf2f7; height: 8px; border-radius: 10px; overflow: hidden; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, var(--secondary), var(--primary)); width: 0%; border-radius: 10px; transition: width 0.4s ease; }
+
+        .question-wrapper { flex-grow: 1; display: flex; flex-direction: column; justify-content: center; }
+        
+        .icon-container {
+            width: 80px; height: 80px; background: #fff; border-radius: 50%;
+            display: flex; justify-content: center; align-items: center; margin: 0 auto 20px auto;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.05); border: 1px solid #f0f0f0;
+        }
+        .q-icon { font-size: 2.5rem; }
+
+        .q-text {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.5rem; line-height: 1.4; margin-bottom: 30px;
+            color: var(--text-main); font-weight: 700;
+        }
+
+        .option-card {
+            background: rgba(255, 255, 255, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            padding: 20px 25px; border-radius: 18px; margin-bottom: 15px;
+            cursor: pointer; font-size: 1rem; text-align: left; color: var(--text-main);
+            transition: all 0.2s ease; position: relative;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.02); display: flex; align-items: center;
+        }
+        .option-card::before {
+            content: ''; width: 16px; height: 16px; border: 2px solid #d1d1e0; border-radius: 50%;
+            margin-right: 15px; flex-shrink: 0;
+        }
+        .option-card:hover { background: #fff; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.05); border-color: var(--primary-light); }
+        .option-card:active { transform: scale(0.98); }
+
+        /* --- 結果頁 --- */
+        .result-scroll-area { overflow-y: auto; padding-right: 5px; scrollbar-width: thin; max-height: 720px; }
+        
+        .result-header { text-align: center; margin-bottom: 20px; }
+        .result-img-wrapper {
+            width: 140px; height: 140px; margin: 0 auto 15px auto;
+            border-radius: 50%; border: 5px solid #fff;
+            box-shadow: 0 15px 35px rgba(76, 47, 245, 0.15); overflow: hidden; background: #fff;
+        }
+        .result-img { width: 100%; height: 100%; object-fit: cover; }
+
+        .result-code { 
+            font-family: 'Playfair Display', serif; font-size: 3rem; font-weight: 900;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            margin: 5px 0; line-height: 1.1; letter-spacing: 2px;
+        }
+        .result-title { font-size: 1.5rem; margin: 5px 0; font-weight: 700; color: var(--text-main); }
+        
+        .quote-box {
+            background: linear-gradient(to right, rgba(76, 47, 245, 0.05), rgba(76, 47, 245, 0.01));
+            border-left: 4px solid var(--primary); padding: 15px 20px; margin: 20px 0;
+            border-radius: 0 10px 10px 0; font-style: italic; color: var(--text-sub); text-align: left; font-size: 0.95rem;
+        }
+
+        .chart-wrapper { position: relative; height: 300px; width: 100%; margin-bottom: 30px; }
+
+        .analysis-card {
+            background: rgba(255,255,255,0.7); border-radius: 20px; padding: 25px;
+            margin-bottom: 20px; text-align: justify; line-height: 1.8;
+            border: 1px solid rgba(255,255,255,0.5); font-size: 0.95rem;
+        }
+        .analysis-card h3 {
+            font-size: 1.1rem; color: var(--primary); margin-bottom: 12px;
+            display: flex; align-items: center; text-align: left; font-weight: 700;
+        }
+        .analysis-card h3::before {
+            content: ''; display: inline-block; width: 6px; height: 18px;
+            background: var(--primary); border-radius: 3px; margin-right: 10px;
+        }
+
+        /* 特殊區塊顏色 */
+        .card-blind { border-left: 4px solid #ff7675; background: linear-gradient(to bottom right, rgba(255, 240, 240, 0.8), rgba(255, 255, 255, 0.6)); }
+        .card-blind h3 { color: #d63031; }
+        .card-blind h3::before { background: #d63031; }
+
+        .card-advice { border-left: 4px solid #00b894; background: linear-gradient(to bottom right, rgba(240, 255, 250, 0.8), rgba(255, 255, 255, 0.6)); }
+        .card-advice h3 { color: #00b894; }
+        .card-advice h3::before { background: #00b894; }
+
+        /* CTA */
+        .cta-btn {
+            background: linear-gradient(135deg, #00b09b, #96c93d); color: white; padding: 18px;
+            border-radius: 16px; text-align: center; margin-top: 15px; text-decoration: none; display: block;
+            box-shadow: 0 10px 25px rgba(0, 176, 155, 0.3); transition: transform 0.2s;
+        }
+        .cta-btn:hover { transform: translateY(-3px); }
+        .cta-btn strong { display: block; font-size: 1.2rem; margin-bottom: 4px; }
+
+        /* Loading */
+        .loader {
+            width: 60px; height: 60px; border: 5px solid #f3f3f3; border-top: 5px solid var(--primary);
+            border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 20px auto;
+        }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    
+    <!-- 1. 首頁 -->
+    <div id="screen-intro" class="screen active">
+        <div class="intro-wrapper">
+            <div class="intro-icon">💎</div>
+            <h1>保險人格深度分析</h1>
+            <p class="subtitle">
+                這不僅是測驗，更是通往財富自由的心理鑰匙。<br>
+                透過 30 道深度情境題，解碼您的「風險基因」與「決策模式」。<br>
+                <br>
+                <span style="font-size:0.9em; color:#777;">(專家診斷版・含8軸雷達圖)</span>
+            </p>
+        </div>
+        <button id="start-btn" class="btn">開始深度測驗</button>
+    </div>
+
+    <!-- 2. 測驗頁 -->
+    <div id="screen-quiz" class="screen">
+        <div class="progress-container">
+            <div class="progress-info">
+                <span id="q-progress-text">Question 1/30</span>
+                <span id="q-percent">0%</span>
+            </div>
+            <div class="progress-track">
+                <div class="progress-fill" id="progress-bar"></div>
+            </div>
+        </div>
+        
+        <div class="question-wrapper">
+            <div id="question-card-inner">
+                <div class="icon-container">
+                    <span class="q-icon" id="q-icon">✈️</span>
+                </div>
+                <h2 class="q-text" id="q-text">題目載入中...</h2>
+                <div id="options-container"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. Loading -->
+    <div id="screen-loading" class="screen" style="justify-content: center; align-items: center;">
+        <div class="loader"></div>
+        <h3 style="color: var(--primary); margin-bottom: 10px;">AI 正在分析您的財務模型...</h3>
+        <p style="font-size: 0.9rem; color: #888;">比對 16 種大數據人格原型</p>
+    </div>
+
+    <!-- 4. 結果頁 -->
+    <div id="screen-result" class="screen">
+        <div class="result-scroll-area">
+            <div class="result-header">
+                <div class="result-img-wrapper">
+                    <img id="result-img" class="result-img" src="" alt="Role">
+                </div>
+                <div class="result-code" id="result-code">CODE</div>
+                <h2 class="result-title" id="result-title">稱號</h2>
+                <div class="quote-box" id="result-quote">金句</div>
+            </div>
+
+            <div class="chart-wrapper">
+                <canvas id="radarChart"></canvas>
+            </div>
+
+            <div class="analysis-card">
+                <h3>🔍 靈魂原型與財務性格</h3>
+                <div id="result-desc"></div>
+            </div>
+
+            <div class="analysis-card card-blind">
+                <h3>⚠️ 您的潛在財務盲點</h3>
+                <div id="result-blind"></div>
+            </div>
+
+            <div class="analysis-card card-advice">
+                <h3>🛡️ 專家處方籤：專屬裝備建議</h3>
+                <div id="result-advice"></div>
+            </div>
+
+            <a href="https://line.me/ti/p/YOUR_ID_HERE" target="_blank" class="cta-btn">
+                <strong>💬 預約您的專屬財務教練</strong>
+                <span style="font-size: 0.9rem; opacity: 0.95;">為「<span id="cta-name"></span>」量身打造資產配置</span>
+            </a>
+
+            <div style="display: flex; gap: 15px; margin: 30px 0;">
+                <button class="btn" style="background: #fff; color: #555; box-shadow: 0 5px 15px rgba(0,0,0,0.1);" onclick="shareResult()">分享結果</button>
+                <button class="btn" style="background: #fff; color: #aaa; box-shadow: 0 5px 15px rgba(0,0,0,0.1);" onclick="restartQuiz()">重新測驗</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    window.onerror = function(msg, url, line) {
+        alert("發生錯誤，請檢查網路或語法：" + msg);
+    };
+
+    // 30 題完整題庫 (Risk, Decision, Time, Focus)
+    const questions = [
+        // Risk
+        { icon: "🎢", text: "朋友揪你去坐全世界最高的雲霄飛車，你的反應？", axis: "risk", options: [{ text: "太可怕了，我在下面顧包包就好。", val: -1 }, { text: "走啊！人生就是要追求刺激！", val: 1 }] },
+        { icon: "📱", text: "手機跳出最新的 Beta 版系統更新，你會？", axis: "risk", options: [{ text: "先觀望一陣子，怕有災情。", val: -1 }, { text: "馬上更新，想搶先體驗。", val: 1 }] },
+        { icon: "🍛", text: "去異國餐廳點餐，你會選？", axis: "risk", options: [{ text: "看起來最安全的招牌套餐。", val: -1 }, { text: "名字很怪的神秘料理。", val: 1 }] },
+        { icon: "🛫", text: "規劃自由行旅遊時，你的風格？", axis: "risk", options: [{ text: "攻略做滿，住宿交通全訂好。", val: -1 }, { text: "訂了機票去那邊再說。", val: 1 }] },
+        { icon: "💼", text: "薪資總額差不多，你選擇？", axis: "risk", options: [{ text: "100% 固定底薪，求穩定。", val: -1 }, { text: "低底薪 + 高額獎金，拚上限。", val: 1 }] },
+        { icon: "🪙", text: "看到虛擬貨幣暴漲，你會？", axis: "risk", options: [{ text: "覺得是泡沫，存款比較實在。", val: -1 }, { text: "有點心動，想進場試試。", val: 1 }] },
+        { icon: "🎤", text: "被拱上台唱不熟的歌，你會？", axis: "risk", options: [{ text: "死都不肯，怕丟臉。", val: -1 }, { text: "管他的，大方亂唱。", val: 1 }] },
+        // Decision
+        { icon: "💻", text: "買昂貴筆電，下單關鍵是？", axis: "decision", options: [{ text: "店員服務態度好或朋友推薦。", val: -1 }, { text: "比較規格表，確認 CP 值最高。", val: 1 }] },
+        { icon: "🧩", text: "組裝複雜家具，你會？", axis: "decision", options: [{ text: "憑直覺拼，卡住再求救。", val: -1 }, { text: "分類零件，照說明書做。", val: 1 }] },
+        { icon: "🚗", text: "導航選路時，你偏好？", axis: "decision", options: [{ text: "好開、風景好的大路。", val: -1 }, { text: "時間最快但要鑽小巷。", val: 1 }] },
+        { icon: "🎬", text: "看電影哪種劇情最催淚？", axis: "decision", options: [{ text: "主角與親人間的深情羈絆。", val: -1 }, { text: "主角靠智慧戰勝困境。", val: 1 }] },
+        { icon: "🗣️", text: "和朋友爭執時，你通常？", axis: "decision", options: [{ text: "在意氣氛，先軟化。", val: -1 }, { text: "堅持講道理，對錯重要。", val: 1 }] },
+        { icon: "🤝", text: "業務員怎麼做能打動你？", axis: "decision", options: [{ text: "分享真誠故事，像朋友。", val: -1 }, { text: "拿出詳細數據報表證明。", val: 1 }] },
+        { icon: "👕", text: "買衣服時，你在意？", axis: "decision", options: [{ text: "穿起來的感覺與風格。", val: -1 }, { text: "材質成分與耐洗度。", val: 1 }] },
+        // Time
+        { icon: "⏳", text: "如果有時光機，你想去？", axis: "time", options: [{ text: "回到過去重溫美好。", val: -1 }, { text: "前往未來看看自己。", val: 1 }] },
+        { icon: "🍰", text: "減肥中看到蛋糕，你會？", axis: "time", options: [{ text: "吃了再說，明天再減。", val: -1 }, { text: "忍住不吃，為了體態。", val: 1 }] },
+        { icon: "🔋", text: "手機充電習慣是？", axis: "time", options: [{ text: "用到快沒電才充。", val: -1 }, { text: "隨時保持 50% 以上。", val: 1 }] },
+        { icon: "🌱", text: "種一顆 10 年才開花的樹？", axis: "time", options: [{ text: "太久了，應該會忘記。", val: -1 }, { text: "細心呵護期待開花。", val: 1 }] },
+        { icon: "🏋️", text: "關於運動的心態？", axis: "time", options: [{ text: "變胖了才趕快動一下。", val: -1 }, { text: "為了老後的健康投資。", val: 1 }] },
+        { icon: "💰", text: "獲得年終獎金，優先？", axis: "time", options: [{ text: "犒賞自己去旅遊。", val: -1 }, { text: "存進退休投資帳戶。", val: 1 }] },
+        { icon: "🦷", text: "看牙醫的習慣？", axis: "time", options: [{ text: "痛到不行才去掛號。", val: -1 }, { text: "每半年定期洗牙。", val: 1 }] },
+        { icon: "🔧", text: "水龍頭漏水，你會？", axis: "time", options: [{ text: "拿膠帶先頂著用。", val: -1 }, { text: "馬上修，怕漏更大。", val: 1 }] },
+        // Focus
+        { icon: "🧞‍♂️", text: "神燈願望二選一？", axis: "focus", options: [{ text: "擁有花不完的錢享受。", val: -1 }, { text: "家人朋友一輩子健康。", val: 1 }] },
+        { icon: "📸", text: "大合照出來第一眼看？", axis: "focus", options: [{ text: "看自己好不好看。", val: -1 }, { text: "看大家表情好不好。", val: 1 }] },
+        { icon: "🚣", text: "划船遇大浪，直覺是？", axis: "focus", options: [{ text: "保護裝備，不落水。", val: -1 }, { text: "確認大家穿好救生衣。", val: 1 }] },
+        { icon: "✈️", text: "免費升等商務艙只有一位？", axis: "focus", options: [{ text: "自己去坐。", val: -1 }, { text: "讓給旅伴或家人。", val: 1 }] },
+        { icon: "🎁", text: "中樂透第一筆錢花在？", axis: "focus", options: [{ text: "買觀望很久的跑車。", val: -1 }, { text: "幫家裡換房子還貸款。", val: 1 }] },
+        { icon: "🎂", text: "生日比較希望？", axis: "focus", options: [{ text: "一個人做喜歡的事。", val: -1 }, { text: "親友聚餐熱鬧慶祝。", val: 1 }] },
+        { icon: "✍️", text: "寫回憶錄會著重？", axis: "focus", options: [{ text: "我達成的個人成就。", val: -1 }, { text: "留給後世的教誨。", val: 1 }] },
+        { icon: "🌟", text: "希望這輩子的結局？", axis: "focus", options: [{ text: "精彩無悔，錢花光光。", val: -1 }, { text: "遺愛人間，留下資產。", val: 1 }] }
+    ];
+
+    // --- 升級版資料庫：每一項至少200字以上 ---
+    const resultsData = {
+        "SLLA": { 
+            title: "堅不可摧的帝國指揮官", 
+            imgUrl: "https://i.ibb.co/nNcFK6Gz/slla.png", 
+            quote: "「真正的愛，是萬無一失的準備。」", 
+            desc: "您的靈魂深處住著一位威嚴而慈愛的指揮官。在人生的航道上，您不追求驚濤駭浪的刺激，而是致力於打造一艘永不沉沒的航空母艦。您擁有極高的責任意識與長遠的戰略眼光，面對財務決策時，您極度理性，從不抱持僥倖心態。您關注的不是短期的獲利，而是長達數十年的家庭安全網。在團體中，您是那個最讓人安心的靠山，所有的準備都是為了確保即便風暴來臨，您所愛的人依然能維持現有的生活尊嚴。您的邏輯縝密，對於任何合約條款都會反覆確認，絕不允許任何漏洞存在。您相信「秩序」與「規劃」是通往幸福的唯一途徑。", 
+            blind: "您的最大盲點在於「過度保守」。因為太害怕虧損，您可能將大部分資產都鎖在低風險但低回報的地方（如定存或儲蓄險）。然而，在長壽風險與高通膨的時代，「不投資」其實是最大的風險。若缺乏適度的積極增值，您辛苦存下的城牆可能會在 20 年後被通膨的巨獸悄悄侵蝕，導致購買力大幅下降。此外，您總是為了家人犧牲自己的享受，忘了自己也是需要被呵護的，過度的責任感有時會成為沉重的心理負擔。", 
+            advice: "建議配置：<strong>60% 穩健保障 / 40% 增值投資</strong>。<br><br>您需要的是如同護城河般的防護，加上能抗通膨的糧倉。首選<strong>高額終身壽險</strong>做為資產傳承的基石，這能滿足您照顧家人的渴望。搭配<strong>美元利變型保單</strong>，利用時間複利來對抗通膨。此外，強烈建議配置<strong>長照險</strong>，因為您最不希望的就是老後成為家人的負擔。在投資方面，可以嘗試定期定額投入全球型 ETF，讓資產有機會隨著世界經濟成長，而不需要您花太多時間盯盤。" 
+        },
+        "SLLE": { 
+            title: "孤獨的理性煉金術師", 
+            imgUrl: "https://i.ibb.co/jvfPS0Xy/slle.png", 
+            quote: "「靠人不如靠己，數據才是真理。」", 
+            desc: "您是一位崇尚邏輯與獨立的智者。您相信數據多過於相信人情，人際關係的牽絆對您來說有時是種負擔。您的思維精密如鐘錶，規劃未來時，核心邏輯是「不給別人添麻煩」以及「確保自己老後的絕對尊嚴」。您不喜歡畫大餅的未來願景，只相信合約上白紙黑字的保證給付金額。您就像一位煉金術師，試圖透過精密的計算，將現在的資源轉化為未來永不枯竭的現金流。您對於風險的容忍度較低，偏好確定性高的事物，對於無法掌控的波動會感到焦慮。您的財務世界是一座精密運作的工廠，目標是產出源源不絕的安全感。", 
+            blind: "雖然您規劃了完美的退休金，卻可能忽略了「身故後的資產傳承」與「失能風險」。過於理性的您可能低估了，當人老了或病了，需要的不仅仅是錢，還有人的照護。僅靠儲蓄可能不足以支付龐大的人工看護費用（目前每月約需 3-5 萬台幣，且持續上漲中）。此外，稅務規劃也是您容易忽略的一環，別讓辛苦累積的資產在最後一刻被遺產稅吃掉大半。您也容易陷入「見樹不見林」的思考，過度糾結於微小的費率差異，而錯過了整體資產配置的黃金時機。", 
+            advice: "建議配置：<strong>50% 退休年金 / 50% 醫療照護</strong>。<br><br>您需要的是源源不絕的現金流與尊嚴防護。首選<strong>利率變動型年金</strong>，這能確保您活得越久領得越多，解決長壽沒錢花的風險。搭配<strong>失能扶助險</strong>與<strong>實支實付醫療</strong>，讓您在任何狀態下都能維持高品質的生活水準，不需要看任何人臉色。如果行有餘力，可以考慮<strong>信託規劃</strong>，確保您的資產在您意識不清時，依然能按照您的意志使用，這是對自己尊嚴的終極保障。" 
+        },
+        "SLPA": { 
+            title: "精打細算的務實管家", 
+            imgUrl: "https://i.ibb.co/FkH4X7zt/slpa.png", 
+            quote: "「把錢花在刀口上，才是真聰明。」", 
+            desc: "您是徹頭徹尾的務實主義者，解決問題講求快、狠、準。您不喜歡談論太遙遠或虛無縹緲的未來（如 40 年後的退休生活），您更在意「當下」隨時可能發生的風險。您追求極致的 CP 值，認為保險與財務規劃應該用最少的預算，解決眼前最大的擔憂。您像是家庭的高效管家，總能用有限的資源發揮最大的效益，厭惡任何形式的浪費與華而不實的包裝。您對於「定期險」情有獨鍾，認為低保費高保障才是王道，對於終身型產品的高保費通常嗤之以鼻。您的決策非常理性，往往會比較多家商品後才做決定。", 
+            blind: "「過度依賴定期險」是您的隱形炸彈。年輕時定期險便宜又大碗，但您可能忽略了，當您 65 歲以後，自然費率將呈指數級成長，屆時若無累積足夠資產，可能面臨被保險公司拒保或無力繳費的窘境，導致晚年「裸奔」。此外，太過專注於解決眼前的問題，反而讓您失去了利用時間複利滾動資產的黃金機會。您可能手握高額的死殘保障，卻缺乏足夠的資產來支撐退休後的長壽風險。當工作收入停止時，定期險的保費將成為您巨大的負擔。", 
+            advice: "建議配置：<strong>80% 定期保障 / 20% 強迫儲蓄</strong>。<br><br>利用您精算的優勢，用<strong>定期壽險</strong>與<strong>雙實支實付</strong>建構當下的高保障，這是非常正確的策略。但是，務必撥出一部分資金進行<strong>長期儲蓄或投資</strong>（例如美元儲蓄險或指數型基金），這筆錢是用來支付老後的保費以及生活費。建議採用「階梯式」的規劃，年輕時重保障，中年後慢慢轉向資產累積。別讓年輕時的精明，變成老後的窘迫。" 
+        },
+        "SLPE": { 
+            title: "自由的現實主義者", 
+            imgUrl: "https://i.ibb.co/BHTPxnsW/slpe.png", 
+            quote: "「眼見為憑，活在當下。」", 
+            desc: "您對世界抱持著理性的懷疑態度，只願意為「高機率發生」且「看得到」的事情付費。您不喜歡被長遠的承諾束縛，討厭人情壓力。每一分錢您都要看到具體的效益。您非常重視個人的生活品質與體驗，生病時絕對要住單人房、用最好的自費耗材，認為這才是花錢的意義。您像是一位裝備齊全的登山客，只帶最實用的裝備，專注於腳下的每一步。您對於「身故留錢給別人」這件事比較無感，更在意自己活著的時候能不能過得爽快。您的財務決策非常自我中心（健康的自我），不隨波逐流。", 
+            blind: "過度微觀於「醫療理賠」，卻忽略了宏觀的「長壽風險」。醫療險只能解決住院幾天的錢，卻無法解決活得太久沒錢用的問題。您的資產配置可能過於集中在消費型保險與當下的生活享受，缺乏資產累積。一旦發生需要長期休養的狀況（如中風、癌症復健），存款可能會迅速燒乾。此外，因為不喜歡長約，您可能錯過了年輕時鎖定低保費的機會，導致年紀大時買不到合適的保險。", 
+            advice: "建議配置：<strong>70% 高端醫療 / 30% 短期儲蓄</strong>。<br><br>既然重視品質，<strong>高端醫療險（實支實付）</strong>與<strong>重大傷病險</strong>是您的必備裝備，讓您生病時能用最好的藥、住最好的房。同時，建議配置<strong>短年期美元儲蓄險</strong>，強迫自己存下一筆未來的旅遊或享樂基金，兼顧當下與未來的平衡。可以考慮「還本型」的意外險，既有保障又能拿回本金，符合您不喜歡浪費保費的性格。" 
+        },
+        "SFLA": { 
+            title: "溫柔焦慮的守護天使", 
+            imgUrl: "https://i.ibb.co/Ld0ZJT0V/sfla.png", 
+            quote: "「只要你們好好的，我就放心了。」", 
+            desc: "您的內心柔軟如棉，情感豐富，是天生的照顧者。您容易為家人的未來感到擔憂，買保險的主要動力往往來自於「求心安」以及對家人的愛。您比較依賴人際信任，傾向聽從親友或信任業務員的建議。只要聽到某個規劃能幫孩子存教育金，或是能讓父母安心，您通常很難拒絕。您就像一位守護天使，張開翅膀試圖為所愛之人遮風擋雨，甚至願意犧牲自己的需求來滿足家人。您對於風險的想像往往比較災難化，因此希望把所有漏洞都補起來。", 
+            blind: "「耳根子軟」是您的最大弱點。您容易買到「人情保單」或重複性質的商品，導致保費負擔過重，甚至發生「買了一堆保險卻不清楚內容」的狀況。您可能幫小孩買得非常齊全，卻忽略了身為家中經濟支柱的自己保障不足。一旦您倒下，孩子的保費將無以為繼。此外，您可能因為焦慮而買了太多不必要的附約，分散了主要風險的防禦能力。您的保單資料夾可能很厚，但真正的保障效率卻不高。", 
+            advice: "建議配置：<strong>50% 還本型保障 / 50% 長照規劃</strong>。<br><br>找一位值得信任且專業的顧問幫您「瘦身」保單是當務之急。<strong>還本型壽險</strong>與<strong>長照險（附帶豁免保費機制）</strong>最適合您，既能給家人保障，滿期或發生變故時也不會造成負擔。請記住一個原則：<strong>先愛自己，才能愛家人</strong>。優先補足您自己的失能與重疾保障，這才是對家人最負責任的做法。" 
+        },
+        "SFLE": { 
+            title: "追求安穩的優雅貴族", 
+            imgUrl: "https://i.ibb.co/whP5QZ1M/sfle.png", 
+            quote: "「生活，就該從容不迫。」", 
+            desc: "您嚮往安穩、有質感的生活，不喜歡研究複雜的數字與生硬的條款。您買保險是為了讓未來的自己能像現在一樣優雅，不用為錢煩惱。您喜歡聽起來簡單、穩定、能「固定領錢」的商品。您相信直覺，也相信品牌與口碑。對您來說，財務規劃是為了維持那份從容不迫的底氣，讓您在老後依然能優雅地喝下午茶。您不喜歡高風險的投資，認為心情平靜比資產暴增更重要。您是保險公司眼中的優質客戶，忠誠度高且重視服務體驗。", 
+            blind: "容易被「高配息」或「還本」的行銷話術吸引，忽略了通貨膨脹對本金的侵蝕，以及提前解約的高額損失。您可能持有太多類型的儲蓄險，但對於突發的大額醫療支出（如癌症標靶藥物、達文西手術）缺乏足夠的防禦力。優雅的背後，需要有足夠的流動現金流支撐。若資產都卡在閉鎖期長的保單中，遇到急用錢時會非常被動。", 
+            advice: "建議配置：<strong>70% 穩健配息 / 30% 醫療</strong>。<br><br><strong>月配息類保單</strong>或<strong>美元還本險</strong>能滿足您對現金流的渴望，但請務必確認其實質報酬率（IRR）。別忘了附加足額的<strong>實支實付醫療險</strong>與<strong>重大傷病險</strong>，保護您的老本不被醫院收走。建議您可以撥出一小部分資金進行定期定額的基金投資，增加資產的增值潛力，以對抗長期的通膨風險。" 
+        },
+        "SFPA": { 
+            title: "熱血的鄰家隊長", 
+            imgUrl: "https://i.ibb.co/x8qcSmpH/sfpa.png", 
+            quote: "「有福同享，有難我扛！」", 
+            desc: "您古道熱腸，重視人際關係，喜歡照顧身邊的人。您經常在社群中活躍，覺得風險分擔很重要。您最怕孩子生病受傷沒人顧，或者發生意外拖累家人。您的決策容易受群體影響，傾向選擇大家都在買的熱門商品（如罐頭保單），覺得「跟著大家買就不會錯」。您就像是社區裡的熱心隊長，總是衝在第一線互助。您對於保險的態度是正面的，認為這是人類互助精神的展現，樂於分享好的資訊給朋友。", 
+            blind: "常見盲點是「重小孩、輕大人」以及「保障碎片化」。您可能買了很多意外險、醫療險，看似保單一疊，但真正的重大風險（如失能、長照、家庭經濟支柱身故）反而缺口很大。您需要跳脫「大雜燴」式的買法，建立系統性的防護網。此外，因為太容易受朋友影響，可能會買到不適合自己家庭狀況的商品，導致人情保單堆積。", 
+            advice: "建議配置：<strong>先保大人再保小孩</strong>。<br><br>請優先補足您自己的<strong>定期壽險</strong>與<strong>重大傷病險</strong>，因為您才是家裡最大的印鈔機。行有餘力，再幫家人規劃<strong>家庭式意外險</strong>或<strong>兒童罐頭保單</strong>。建議您可以建立一份「家庭保單總表」，清楚列出每個人的保障缺口，避免重複購買或遺漏重要風險。這才是對家人最負責任的愛。" 
+        },
+        "SFPE": { 
+            title: "隨遇而安的快樂精靈", 
+            imgUrl: "https://i.ibb.co/FkLqLQbL/sfpe.png", 
+            quote: "「有拜有保庇，船到橋頭自然直。」", 
+            desc: "您的生活哲學是簡單就好，樂天知命。對保險一知半解，覺得「有買就好」，不想花太多腦筋研究。您通常會買一些門檻低、手續簡單的保險，或是朋友推薦什麼就買一張便宜的交差。您比較在意保費是否便宜，而非保障是否足夠。您就像是快樂的小精靈，在當下自在飛舞，對於暴風雨抱持著「應該不會發生在我身上」的樂觀。您不喜歡被複雜的合約綁住，覺得錢夠用就好，不需要太精細的規劃。", 
+            blind: "您的保障額度通常嚴重不足，常出現「年繳保費很少，但真的發生大事時理賠金只是杯水車薪」的狀況。您可能沒有任何抗風險能力，一旦發生需要長期休養的疾病（如癌症或中風），經濟來源中斷且醫療支出龐大，生活會立刻崩盤。您容易因為僥倖心態而裸奔，這是財務安全上最大的漏洞。", 
+            advice: "建議配置：<strong>小預算做大保障</strong>。<br><br>不要因為預算少就不規劃。善用<strong>網路投保定期險</strong>、<strong>小額終身壽險</strong>與<strong>一年期醫療附約</strong>，用每天一杯飲料的錢，至少幫自己架設基本的防護罩。您可以從「意外險」與「實支實付」入手，這是 CP 值最高的入門組合。請記住，保險不是為了發財，而是為了在跌倒時有一層軟墊保護您。" 
+        },
+        "DLLA": { 
+            title: "開創王朝的雄獅國王", 
+            imgUrl: "https://i.ibb.co/vvLnbwjP/dlla.png", 
+            quote: "「我要留下的，是一個傳奇。」", 
+            desc: "您具備領袖氣質與富人思維，將保險視為資產配置與稅務規劃的重要工具。您願意承擔市場波動來換取更高的身故保額或傳承價值。您的目標是讓家族資產最大化，富過三代。您喜歡結構清晰、能利用槓桿的金融工具。您就像一位開疆闢土的國王，努力不僅是為了自己，更是為了建立一個能庇蔭後代的強大王朝。您的眼光長遠，能夠忍受短期的市場波動，只為了最後的豐厚果實。", 
+            blind: "過度依賴「投資績效」來支撐保障是您的潛在風險。若市場長期低迷，可能影響保單價值甚至導致停效。此外，需注意境外保單或複雜商品的稅務合規性，避免資產傳承時面臨預期外的稅負。您可能過於專注資產增值，而忽略了自身的健康風險管理，身體才是革命的本錢。若因病倒下，再龐大的王朝也可能瞬間瓦解。", 
+            advice: "建議配置：<strong>30% 壽險槓桿 / 70% 積極投資</strong>。<br><br>善用<strong>變額萬能壽險（投資型）</strong>與<strong>資產傳承型保單</strong>，利用壽險槓桿放大資產，同時解決遺產稅稅源問題。同時，請務必配置高額的<strong>重大傷病險</strong>，保護您的現金流不斷鏈。建議定期檢視您的資產配置比例，確保在攻擊（投資）與防守（保障）之間取得平衡。" 
+        },
+        "DLLE": { 
+            title: "華爾街的金融建築師", 
+            imgUrl: "https://i.ibb.co/Y7KRMpkM/dlle.png", 
+            quote: "「風險，是通往財富自由的入場券。」", 
+            desc: "您極度精明，擅長利用金融工具的規則。您買保險不是為了怕死，而是為了「利用」保險公司的機制來放大資產。您會研究保單融資、匯率套利，目標是極大化個人的淨資產。您把保險當成一種防守型的投資組合，在您的眼裡，沒有什麼是不能計算的。您就像一位金融建築師，用數字與槓桿搭建屬於自己的財富摩天大樓。您對於市場趨勢非常敏銳，隨時準備調整資產配置以獲取最大利益。", 
+            blind: "「財務槓桿過大」是您的隱形炸彈。若遇上景氣反轉、升息循環或匯率劇烈波動，現金流可能斷裂，導致保單被斷頭。此外，您可能過於自信於自己的操作，而忽略了那些「不可控」的人生風險（如意外失能、長照），這些是無法用投資報酬率來彌補的。您的理財過於冷靜理性，有時會忽略了家人對於安全感的情感需求。", 
+            advice: "建議配置：<strong>高槓桿操作需搭配現金流</strong>。<br><br><strong>投資型年金</strong>與<strong>利變型美元保單</strong>是您的好夥伴，但請務必保留 6 個月以上的緊急預備金，並配置<strong>失能險</strong>作為您槓桿操作的安全氣囊。建議您可以將部分獲利轉入「保證給付」的保守型商品，鎖住獲利，避免紙上富貴一場空。" 
+        },
+        "DLPA": { 
+            title: "走鋼索的極限運動員", 
+            imgUrl: "https://i.ibb.co/XrhvHfbt/dlpa.png", 
+            quote: "「我在前線衝刺，保險幫我顧後方。」", 
+            desc: "您深知自己在工作或投資上冒著高風險（如創業、炒股、高風險職業），所以您用保險來做「風險對沖」。您傾向購買低保費、超高保額的定期險，確保萬一自己「玩脫了」或發生意外，家人能瞬間獲得巨額理賠金償還債務。您就像一位極限運動員，追求速度與挑戰，但也懂得繫上最堅固的安全繩，確保萬無一失。您的思維非常靈活，隨時準備應對突發狀況。", 
+            blind: "隨著年齡增長，定期險費率暴漲後，可能面臨「無保可保」的空窗期。此外，若身體狀況變差，可能無法再購買新保單。您習慣了短期的衝刺，卻可能忽略了老後漫長的馬拉松。當您跑不動時，誰來照顧您？定期險無法解決長壽與老後失能的風險，這是您拼圖中缺失的一塊。", 
+            advice: "建議配置：<strong>90% 高額定期險 / 10% 失能險</strong>。<br><br>維持您喜歡的<strong>高額定期壽險</strong>與<strong>意外死殘</strong>保障，這對現階段的您至關重要。但強烈建議趁年輕健康時，配置一張長年期的<strong>失能險</strong>或<strong>長照險</strong>，為您的極限人生留一條退路。這張保單就像是您的備用降落傘，平時用不到，但關鍵時刻能救命。" 
+        },
+        "DLPE": { 
+            title: "瀟灑的自由浪人", 
+            imgUrl: "https://i.ibb.co/kgChM34H/dlpe.png", 
+            quote: "「身外之物，生不帶來死不帶去。」", 
+            desc: "您熱愛生活、旅遊、體驗新事物。您買保險是為了轉嫁玩樂的風險成本。您會仔細比較旅平險的不便險條款，或是針對特定活動買保險。您是最懂「保險理賠規則」的消費者，知道如何用保險來保護自己的資產不被意外侵蝕。您就像一位瀟灑的浪人，不喜歡被長遠的承諾（如房貸、長年期保單）綁住，追求的是當下的精彩。您認為金錢是用來創造回憶的，而不是存在銀行裡發霉。", 
+            blind: "缺乏長期儲蓄與長照規劃，老後可能面臨「有精彩回憶但沒錢」的窘境。由於您活在當下，退休金準備往往嚴重不足。當您老了，無法再到處流浪時，醫療與生活費用將成為巨大的黑洞。您的自由是建立在健康的基礎上，一旦健康亮紅燈，自由將瞬間變成流浪。", 
+            advice: "建議配置：<strong>強化意外醫療 + 強迫儲蓄</strong>。<br><br>除了<strong>頂級旅平險</strong>與<strong>特定活動險</strong>外，您需要一個「強迫儲蓄」的機制。建議購買短年期的<strong>美元儲蓄險</strong>，逼自己存下未來的旅費與老本。這筆錢不只是為了養老，更是為了讓您在未來還有本錢繼續瀟灑。別讓老後的貧窮限制了您的靈魂。" 
+        },
+        "DFLA": { 
+            title: "充滿願景的夢想家", 
+            imgUrl: "https://i.ibb.co/dSs5pwC/dfla.png", 
+            quote: "「相信美好，就能看見美好。」", 
+            desc: "您對於未來充滿願景，也有很好的直覺。您希望透過理財，給家人一個夢幻的未來。您喜歡那種「專家幫你理財，獲利分給家人」的保單（如類全委）。您容易被「教育基金」、「夢想帳戶」這類美好的願景打動，希望透過時間複利給家人最好的未來。您就像一位畫家，試圖在人生的畫布上，為家人繪製出最絢麗的色彩。您相信愛與財富可以並存，並且願意為了這個目標去嘗試。", 
+            blind: "對投資績效過於樂觀，可能高估了未來能留給家人的金額。這類保單通常內扣費用較高，若市場表現不佳，本金可能會被費用侵蝕。此外，夢想雖然美好，但現實的「醫療風險」更需要被重視，別讓一場大病畫壞了您的藍圖。您可能因為太過專注於美好的未來，而忽略了當下基礎保障的紮實度。", 
+            advice: "建議配置：<strong>專家代操 + 定期定額</strong>。<br><br><strong>類全委投資型保單</strong>或<strong>分紅保單</strong>適合您，讓專業團隊幫您打理。但請務必定期檢視帳戶價值，並補足<strong>實支實付醫療</strong>的基礎防護。建議您可以設定停利停損點，將獲利轉入穩健的債券或儲蓄險中，把夢想「鎖」進保險箱裡。" 
+        },
+        "DFLE": { 
+            title: "憑直覺的時尚大亨", 
+            imgUrl: "https://i.ibb.co/FL55Rv6F/dfle.png", 
+            quote: "「感覺對了，就全押了！」", 
+            desc: "您決策速度快，喜歡跟隨市場熱點。如果現在流行美元你就買美元，流行 AI 基金你就買相關保單。您享受「擁有資產」的感覺，認為買保險是一種身分與財力的象徵。您通常擁有多張不同類型的保單，喜歡嘗試新事物。您就像一位時尚大亨，在金融市場中尋找最亮眼的精品，享受著擁有它們的快感。您的行動力很強，但也容易因為衝動而買下不適合自己的商品。", 
+            blind: "手中持有多張性質重複或不適合自己的保單，常發生「繳費壓力大」或是「解約覺得虧損，繼續繳又不甘心」的進退兩難。您的保單可能像您的衣櫃一樣，塞滿了衣服但常穿的只有那幾件。您需要進行一次徹底的「保單斷捨離」，避免資金分散，無法發揮最大效益。", 
+            advice: "建議配置：<strong>資產整合與去蕪存菁</strong>。<br><br>找專業顧問進行<strong>保單健診</strong>，將多餘的、重複的保費轉入<strong>美元利變壽險</strong>，累積實質身價。別讓保費成為您追求時尚生活的負擔。建議您在購買新保單前，先冷靜三天，或者諮詢第二意見，確保這個決定是理性的。" 
+        },
+        "DFPA": { 
+            title: "守護家園的熱血超人", 
+            imgUrl: "https://i.ibb.co/hJHmGtKg/dfpa.png", 
+            quote: "「誰都不能傷害我的家人！」", 
+            desc: "您非常有行動力，只要看到新聞報導重大意外，或朋友發生事故，您會立刻想要幫全家人加保。您缺乏系統性規劃，但您的愛心與責任感絕對是滿分，隨時準備為家人擋風遮雨。您就像一位熱血超人，雖然沒有精密的戰略，但只要家人有危險，您絕對是第一個衝出去擋子彈的人。您的保險觀念很單純：只要能保護家人的，通通都要有。", 
+            blind: "買了一堆「碎片化」的保險，導致主約太多、附約混亂，且常忘記繳費。雖然保單數量多，但可能都是低保額或重複的項目。您可能為了幫家人買保險而忽略了自己的退休規劃，導致老後反而成為孩子的負擔。熱血雖好，但若缺乏冷靜的財務規劃，可能會讓愛變成了壓力。", 
+            advice: "建議配置：<strong>統整家庭保單，補足大缺口</strong>。<br><br>利用<strong>意外險懶人包</strong>與<strong>一年期重大傷病險</strong>，用最簡單的方式補足大風險。並請顧問協助您建立<strong>家庭保單總表</strong>，讓您的愛更有條理。請記得，超人也是會老的，別忘了為自己準備一份<strong>退休年金</strong>，讓您在卸下披風後，依然能過得精彩。" 
+        },
+        "DFPE": { 
+            title: "雲端上的自由旅人", 
+            imgUrl: "https://i.ibb.co/YFKc6bgZ/dfpe.png", 
+            quote: "「拘束，是我的敵人。」", 
+            desc: "您討厭被長達 20 年的繳費合約綁住。您喜歡網路投保、一年一約的短期險，喜歡隨時可以解約拿錢出來的彈性。您認為錢就是要花在現在讓自己開心，保險只是順便買的配件，有就好。您就像一位漫步在雲端的旅人，隨風而行，不喜歡任何沉重的行李，認為船到橋頭自然直。您的生活充滿了變數與驚喜，但也伴隨著高度的不確定性。", 
+            blind: "完全裸奔的財務狀態是您最大的危機。一旦發生需要長期休養的疾病（如癌症或中風），經濟來源中斷且醫療支出龐大，生活會立刻從雲端跌落谷底。年輕時的自由，可能變成老後的流離失所。您對於「複利」與「長期累積」的概念比較無感，這將導致您錯失資產增值的機會。", 
+            advice: "建議配置：<strong>低保費高槓桿的純保障</strong>。<br><br>如果討厭綁約，請至少購買<strong>保證續保的定期醫療險</strong>與<strong>意外險</strong>。這是您在雲端飛翔時的降落傘，雖不重，但救命。如果可以，試著強迫自己每個月存下一點點錢（例如收入的 10%），購買流動性較高的<strong>數位帳戶活存</strong>或<strong>ETF</strong>，為未來的自由儲備燃料。" 
+        }
+    };
+
+    // --- 程式邏輯維持不變 (Chart.js 綁定等) ---
+    let currentStep = 0;
+    let scores = { risk: 0, decision: 0, time: 0, focus: 0 };
+    let myRadarChart = null;
+
+    document.getElementById('start-btn').addEventListener('click', () => {
+        currentStep = 0;
+        scores = { risk: 0, decision: 0, time: 0, focus: 0 };
+        showScreen('screen-quiz');
+        renderQuestion();
+    });
+
+    function showScreen(id) {
+        document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        window.scrollTo(0, 0);
+    }
+
+    function renderQuestion() {
+        const q = questions[currentStep];
+        const pct = Math.round(((currentStep + 1) / questions.length) * 100);
+        
+        document.getElementById('q-progress-text').innerText = `Question ${currentStep + 1}/${questions.length}`;
+        document.getElementById('q-percent').innerText = `${pct}%`;
+        document.getElementById('progress-bar').style.width = `${pct}%`;
+
+        const contentDiv = document.getElementById('question-card-inner');
+        contentDiv.style.opacity = 0;
+        contentDiv.style.transform = "translateY(10px)";
+
+        setTimeout(() => {
+            document.getElementById('q-icon').innerText = q.icon;
+            document.getElementById('q-text').innerText = q.text;
+            
+            const container = document.getElementById('options-container');
+            container.innerHTML = '';
+            
+            q.options.forEach((opt) => {
+                const btn = document.createElement('button');
+                btn.className = 'option-card';
+                btn.innerText = opt.text;
+                btn.onclick = () => handleAnswer(q.axis, opt.val);
+                container.appendChild(btn);
+            });
+
+            contentDiv.style.transition = "all 0.4s ease";
+            contentDiv.style.opacity = 1;
+            contentDiv.style.transform = "translateY(0)";
+        }, 300);
+    }
+
+    function handleAnswer(axis, val) {
+        scores[axis] += val;
+        currentStep++;
+        if (currentStep < questions.length) {
+            renderQuestion();
+        } else {
+            document.getElementById('progress-bar').style.width = '100%';
+            showScreen('screen-loading');
+            setTimeout(calculateAndShowResult, 2000);
+        }
+    }
+
+    function calculateAndShowResult() {
+        let code = "";
+        code += (scores.risk > 0) ? "D" : "S";
+        code += (scores.decision > 0) ? "L" : "F";
+        code += (scores.time > 0) ? "L" : "P";
+        code += (scores.focus > 0) ? "A" : "E";
+
+        const result = resultsData[code];
+        if (!result) return alert("計算錯誤");
+
+        document.getElementById('result-img').src = result.imgUrl;
+        document.getElementById('result-code').innerText = code;
+        document.getElementById('result-title').innerText = result.title;
+        document.getElementById('result-quote').innerText = result.quote;
+        document.getElementById('result-desc').innerHTML = result.desc;
+        document.getElementById('result-blind').innerHTML = result.blind;
+        document.getElementById('result-advice').innerHTML = result.advice;
+        document.getElementById('cta-name').innerText = result.title;
+
+        renderRadarChart();
+        showScreen('screen-result');
+    }
+
+    function renderRadarChart() {
+        const maxScore = 8; 
+        const calc = (val, isPos) => {
+            if ((isPos && val > 0) || (!isPos && val < 0)) {
+                return 30 + (Math.abs(val) / maxScore) * 70; 
+            }
+            return 20; 
+        };
+
+        const dataValues = [
+            calc(scores.risk, true),   
+            calc(scores.decision, true), 
+            calc(scores.time, true),   
+            calc(scores.focus, true),  
+            calc(scores.risk, false),  
+            calc(scores.decision, false),
+            calc(scores.time, false),  
+            calc(scores.focus, false)  
+        ];
+
+        const ctx = document.getElementById('radarChart').getContext('2d');
+        if (myRadarChart) myRadarChart.destroy();
+
+        myRadarChart = new Chart(ctx, {
+            type: 'radar',
+            data: {
+                labels: ['冒險', '理性', '遠見', '利他', '穩健', '情感', '當下', '自我'],
+                datasets: [{
+                    label: '人格傾向',
+                    data: dataValues,
+                    backgroundColor: 'rgba(76, 47, 245, 0.2)',
+                    borderColor: '#4c2ff5',
+                    borderWidth: 2,
+                    pointBackgroundColor: '#fff',
+                    pointBorderColor: '#4c2ff5',
+                    pointRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    r: {
+                        angleLines: { color: 'rgba(0,0,0,0.05)' },
+                        grid: { color: 'rgba(0,0,0,0.05)' },
+                        pointLabels: {
+                            font: { size: 13, family: 'Noto Sans TC', weight: 'bold' },
+                            color: '#5e607e'
+                        },
+                        suggestedMin: 0,
+                        suggestedMax: 100,
+                        ticks: { display: false }
+                    }
+                },
+                plugins: { legend: { display: false } }
+            }
+        });
+    }
+
+    function restartQuiz() {
+        showScreen('screen-intro');
+    }
+
+    function shareResult() {
+        if (navigator.share) {
+            navigator.share({
+                title: '保險人格深度分析',
+                text: `我的保險人格是：${document.getElementById('result-title').innerText}`,
+                url: window.location.href,
+            });
+        } else {
+            alert("請複製網址分享！");
+        }
+    }
+</script>
+
+</body>
+</html>
